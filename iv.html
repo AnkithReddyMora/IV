@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3.js Interactive Visualization</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        /* Basic styling for SVG */
+        svg {
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+        }
+        .tooltip {
+            position: absolute;
+            text-align: center;
+            width: auto;
+            height: auto;
+            padding: 10px;
+            font: 12px sans-serif;
+            background: lightsteelblue;
+            border: 0px;
+            border-radius: 8px;
+            pointer-events: none;
+            opacity: 0;
+        }
+        .bar:hover, .dot:hover {
+            fill: orange;
+        }
+    </style>
+</head>
+<body>
+    <div id="chart-container" style="display: flex; justify-content: center; width: 100%;"></div>
+    <div class="tooltip"></div>
+
+    <script>
+        const svgContainer = d3.select("#chart-container");
+        const tooltip = d3.select(".tooltip");
+
+        d3.csv("https://raw.githubusercontent.com/AnkithReddyMora/IV/main/a1-cars.csv").then(function(data) {
+            // Aggregate data by Origin for the bar chart
+            const originCounts = Array.from(d3.rollup(data, v => v.length, d => d.Origin), ([key, value]) => ({key, value}));
+            
+            // Set dimensions and margins of the graphs
+            const margin = {top: 20, right: 30, bottom: 100, left: 60}, // Adjusted margins
+                  width = 460 - margin.left - margin.right,
+                  height = 400 - margin.top - margin.bottom;
+
+            // Bar Chart SVG
+            const svgBar = svgContainer.append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+            const xBar = d3.scaleBand()
+                .range([0, width])
+                .domain(originCounts.map(d => d.key))
+                .padding(0.1);
+            svgBar.append("g")
+                .attr("transform", `translate(0, ${height})`)
+                .call(d3.axisBottom(xBar));
+            // X-axis label for bar chart
+            svgBar.append("text")
+                .attr("text-anchor", "middle")
+                .attr("x", width / 2)
+                .attr("y", height + margin.bottom - 20)
+                .text("Origin");
+            const yBar = d3.scaleLinear()
+                .domain([0, d3.max(originCounts, d => d.value)])
+                .range([height, 0]);
+            svgBar.append("g")
+                .call(d3.axisLeft(yBar));
+            // Y-axis label for bar chart
+            svgBar.append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", -margin.left + 15)
+                .attr("x", -height / 2)
+                .attr("text-anchor", "middle")
+                .text("Count of Manufacturer");
+
+            svgBar.selectAll(".bar")
+                .data(originCounts)
+                .enter().append("rect")
+                .attr("class", "bar")
+                .attr("x", d => xBar(d.key))
+                .attr("width", xBar.bandwidth())
+                .attr("y", d => yBar(d.value))
+                .attr("height", d => height - yBar(d.value))
+                .attr("fill", "#69b3a2")
+                .on("mouseover", function(event, d) {
+                    tooltip.html(`Origin: ${d.key}<br>Count: ${d.value}`)
+                        .style("opacity", 1)
+                        .style("left", `${event.pageX + 10}px`)
+                        .style("top", `${event.pageY + 20}px`);
+                })
+                .on("mouseout", function() {
+                    tooltip.style("opacity", 0);
+                });
+
+            // Scatter Plot SVG
+            const svgScatter = svgContainer.append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+            const xScatter = d3.scaleLinear()
+                .domain([0, d3.max(data, d => +d.Horsepower)])
+                .range([0, width]);
+            // X-axis label for scatter plot
+            svgScatter.append("text")
+                .attr("text-anchor", "middle")
+                .attr("x", width / 2)
+                .attr("y", height + margin.bottom - 20)
+                .text("Horsepower");
+            const yScatter = d3.scaleLinear()
+                .domain([0, d3.max(data, d => +d.Weight)])
+                .range([height, 0]);
+            // Y-axis label for scatter plot
+            svgScatter.append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", -margin.left + 15)
+                .attr("x", -height / 2)
+                .attr("text-anchor", "middle")
+                .text("Weight");
+            svgScatter.append("g")
+                .attr("transform", `translate(0, ${height})`)
+                .call(d3.axisBottom(xScatter));
+
+            svgScatter.append("g")
+                .call(d3.axisLeft(yScatter));
+
+            svgScatter.selectAll(".dot")
+                .data(data)
+                .enter().append("circle")
+                .attr("class", "dot")
+                .attr("cx", d => xScatter(+d.Horsepower))
+                .attr("cy", d => yScatter(+d.Weight))
+                .attr("r", 5)
+                .attr("fill", "navy")
+                .on("mouseover", function(event, d) {
+                    tooltip.html(`Horsepower: ${d.Horsepower}<br>Weight: ${d.Weight}`)
+                        .style("opacity", 1)
+                        .style("left", `${event.pageX + 10}px`)
+                        .style("top", `${event.pageY + 20}px`);
+                })
+                .on("mouseout", function() {
+                    tooltip.style("opacity", 0);
+                });
+        }).catch(function(error) {
+            console.error("Error loading data:", error);
+        });
+    </script>
+</body>
+</html>
