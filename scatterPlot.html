@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scatter Plot</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            background-image: url('background.jpg'); /* Ensure this path is correct */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed; /* Fix background image during scrolling */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+            color: #0a0909;
+        }
+        #chart-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 60%;
+            height: 60%;
+            margin: auto;
+        }
+        
+        
+        svg {
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+        }
+        .tooltip {
+            position: absolute;
+            text-align: center;
+            width: auto;
+            height: auto;
+            padding: 10px;
+            font: 12px sans-serif;
+            background: lightsteelblue;
+            border: 0px;
+            border-radius: 8px;
+            pointer-events: none;
+            opacity: 0;
+        }
+        .dot:hover {
+            fill: orange;
+        }
+        #zoom-title {
+            margin-top: 10px; /* Space between chart and title */
+            color: #333; /* Text color */
+            width: 100%; /* Full width to center text */
+            text-align: center; /* Center the text */
+        }
+        h2 {
+            margin: 20px 0;
+            color: #333;
+        }
+        
+    </style>
+</head>
+<body>
+    <h2>Impact of Horsepower on Vehicle Weight</h2>
+    <div id="scatter-plot-container"></div>
+    <div id="chart-container"></div>
+    <div class="tooltip"></div>
+    <h3 id="zoom-title">Zoomable Output</h3>
+    
+    <script>
+        d3.csv("https://raw.githubusercontent.com/AnkithReddyMora/IV/main/a1-cars.csv", d => ({
+            Horsepower: +d.Horsepower,
+            Weight: +d.Weight
+        })).then(data => {
+            initScatterPlot(data);
+        }).catch(error => {
+            console.error("Error loading data:", error);
+        });
+
+        function initScatterPlot(data) {
+            const svgContainer = d3.select("#chart-container").append("svg")
+                .attr("width", "100%")
+                .attr("height", "100%")
+                .style("cursor", "move");
+
+            const tooltip = d3.select(".tooltip");
+
+            const margin = {top: 20, right: 20, bottom: 100, left: 100},
+                width = parseInt(svgContainer.style("width")) - margin.left - margin.right,
+                height = parseInt(svgContainer.style("height")) - margin.top - margin.bottom;
+
+            const svg = svgContainer.append("g")
+                .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+            const x = d3.scaleLinear()
+                .domain(d3.extent(data, d => d.Horsepower))
+                .range([0, width]);
+            const y = d3.scaleLinear()
+                .domain(d3.extent(data, d => d.Weight))
+                .range([height, 0]);
+
+            const xAxis = svg.append("g")
+                .attr("transform", `translate(0, ${height})`)
+                .call(d3.axisBottom(x));
+            const yAxis = svg.append("g")
+                .call(d3.axisLeft(y));
+
+            svg.append("text")
+                .attr("text-anchor", "middle")
+                .attr("x", width / 2)
+                .attr("y", height + margin.bottom - 20)
+                .text("Horsepower");
+
+            svg.append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", -margin.left + 15)
+                .attr("x", -height / 2)
+                .attr("text-anchor", "middle")
+                .text("Weight");
+
+            const zoom = d3.zoom()
+                .scaleExtent([0.5, 20])
+                .translateExtent([[0, 0], [width, height]])
+                .extent([[0, 0], [width, height]])
+                .on("zoom", zoomed);
+
+            svgContainer.call(zoom);
+
+            const dots = svg.append("g")
+                .selectAll("dot")
+                .data(data)
+                .enter()
+                .append("circle")
+                .attr("class", "dot")
+                .attr("cx", d => x(d.Horsepower))
+                .attr("cy", d => y(d.Weight))
+                .attr("r", 3.5)
+                .style("fill", "#69b3a2")
+                .on("mouseover", (event, d) => {
+                    tooltip.html(`Horsepower: ${d.Horsepower}<br>Weight: ${d.Weight}`)
+                           .style("opacity", 1)
+                           .style("left", `${event.pageX}px`)
+                           .style("top", `${event.pageY - 28}px`);
+                })
+                .on("mouseout", () => {
+                    tooltip.style("opacity", 0);
+                });
+
+            function zoomed(event) {
+                const {transform} = event;
+                const zx = transform.rescaleX(x);
+                const zy = transform.rescaleY(y);
+                xAxis.call(d3.axisBottom(zx));
+                yAxis.call(d3.axisLeft(zy));
+                dots.attr("cx", d => zx(d.Horsepower))
+                    .attr("cy", d => zy(d.Weight));
+            }
+        }
+    </script>
+</body>
+</html>
