@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Visualization Using D3.js</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            background-image: url('background.jpg'); /* Updated background image */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed; /* Fix background image during scrolling */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+            color: #FFFFFF;
+        }
+        header {
+            width: 100%;
+            font-size: 60px; /* Keep increased text size */
+            color: #0000FF; /* Keep the title blue for visibility */
+            margin-top: 150px; /* Ensure it's at the top */
+            
+        }
+        footer {
+            position: absolute; /* Ensure footer is at the bottom right corner */
+            right: 20px;
+            bottom: 20px;
+            font-size: 16px;
+            color: #0000FF; /* Red color for the footer */
+            background-color: rgba(255, 255, 255, 0.6); /* Light background for better readability */
+        }
+        a {
+            margin: 5px 5px; /* Reduced margin */
+            font-size: 20px;
+            color: #00FF00; /* Green color for links for visibility */
+            background-color: rgba(255, 255, 255, 0.6);
+            padding: 8px; /* Slightly reduced padding */
+            border-radius: 5px;
+            text-decoration: none;
+            display: inline-block; /* Make links inline-block for better control */
+        }
+        a:hover {
+            color: #a2f09b; /* Yellow color when hovering over the link */
+        }
+    </style>
+</head>
+<body>
+    <header>Data Visualization Using D3.js</header>
+    <div style="margin: 20px 0;"> <!-- Reduced vertical margin for the link container -->
+        <a href="javascript:void(0);" onclick="openVisual('barChart')">Distribution of Vehicle Origins</a>
+        <a href="javascript:void(0);" onclick="openVisual('scatterPlot')">Impact of Horsepower on Vehicle Weight</a>
+        <a href="javascript:void(0);" onclick="openVisual('pieChart')">Fuel Efficiency</a>
+        
+    </div>
+    <footer>
+        by Group-7<br>
+        Shivani Sareddy - 811305906<br>
+        Sreenath Reddy Kurukunda - 811211580<br>
+        Ankith Reddy Mora - 811234029<br>
+        Indira Devi - 811288674
+    </footer>
+    <script>
+        function openVisual(visualType) {
+            window.open(visualType + '.html', '_blank');
+        }
+    </script>
+</body>
+</html>

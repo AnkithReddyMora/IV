@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pie Chart</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            background-image: url('background.jpg'); /* Ensure this path is correct */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed; /* Fix background image during scrolling */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        #chart-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: flex-start;
+            width: 700px;
+            height: 500px;
+        }
+        .tooltip {
+            position: absolute;
+            text-align: center;
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 8px;
+            border-radius: 8px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+            visibility: hidden;
+        }
+        .legend {
+            font-size: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            margin-bottom: 20px; /* Reduced margin */
+            margin-left: 20px;
+        }
+        .legend-item {
+            margin: 5px;
+            cursor: pointer;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        h2 {
+            margin-bottom: 20px; /* Adjusted margin */
+            color: #333;
+        }
+        svg {
+            display: block;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+    <h2>Fuel Efficiency</h2>
+    <div id="chart-container">
+        <svg width="400" height="400"></svg>
+        <div class="legend"></div>
+    </div>
+    <div class="tooltip"></div>
+    
+    <script>
+        const data = [
+            { MPG: "0-15", count: 150, color: "#4daf4a" },
+            { MPG: "16-30", count: 200, color: "#377eb8" },
+            { MPG: "31-45", count: 100, color: "#ff7f00" }
+        ];
+
+        const svgContainer = d3.select("svg"),
+              radius = Math.min(400, 400) / 2,
+              svg = svgContainer.append("g")
+                      .attr("transform", `translate(${200}, ${200})`);
+
+        const pie = d3.pie().value(d => d.count),
+              arc = d3.arc().innerRadius(0).outerRadius(radius),
+              data_ready = pie(data);
+
+        svg.selectAll('path')
+            .data(data_ready)
+            .enter().append('path')
+            .attr('d', arc)
+            .attr('fill', d => d.data.color)
+            .attr('class', 'segment')
+            .on("mouseover", function(event, d) {
+                d3.select(this).attr('opacity', 1);
+                d3.select(".tooltip").html(`MPG Range: ${d.data.MPG}<br>Count: ${d.data.count}`)
+                                   .style("opacity", 1)
+                                   .style("visibility", "visible")
+                                   .style("left", `${event.pageX - 100}px`)
+                                   .style("top", `${event.pageY - 50}px`);
+            })
+            .on("mouseout", function() {
+                d3.selectAll('.segment').attr('opacity', 0.7);
+                d3.select(".tooltip").style("opacity", 0).style("visibility", "hidden");
+            });
+
+        d3.selectAll('.segment').attr('opacity', 0.7);
+
+        const legendContainer = d3.select(".legend");
+        data.forEach(d => {
+            legendContainer.append("div")
+                .attr("class", "legend-item")
+                .html(`<span class="legend-color" style="background-color: ${d.color};"></span>${d.MPG} MPG`);
+        });
+    </script>
+</body>
+</html>
